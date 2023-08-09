@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"go.uber.org/fx"
 	"net"
 	"net/http"
@@ -9,35 +10,22 @@ import (
 
 func main() {
 	fx.New(
-		fx.Provide(NewHttpServer),
-		fx.Invoke(func(server2 Server) {}),
+		fx.Provide(NewHTTPServer),
+		fx.Invoke(func(*http.Server) {}),
 	).Run()
 }
 
-type Server interface {
-	getAddr() string
-	runServe(l net.Listener) error
-	Shutdown(ctx context.Context) error
-}
-
-type api struct {
-	*http.Server
-}
-
-func (r api) getAddr() string               { return r.Addr }
-func (r api) runServe(l net.Listener) error { return r.Serve(l) }
-
-func NewHttpServer(lc fx.Lifecycle) Server {
-	var srv Server = api{&http.Server{Addr: ":8080"}}
-
+func NewHTTPServer(lc fx.Lifecycle) *http.Server {
+	srv := &http.Server{Addr: ":8080"}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			ln, err := net.Listen("tcp", srv.getAddr())
+			ln, err := net.Listen("tcp", srv.Addr)
 			if err != nil {
 				return err
 			}
+			fmt.Println("Starting HTTP server at", srv.Addr)
 			go func() {
-				err := srv.runServe(ln)
+				err := srv.Serve(ln)
 				if err != nil {
 					return
 				}
@@ -48,6 +36,5 @@ func NewHttpServer(lc fx.Lifecycle) Server {
 			return srv.Shutdown(ctx)
 		},
 	})
-
 	return srv
 }
