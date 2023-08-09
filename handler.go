@@ -10,6 +10,10 @@ type EchoHandler struct {
 	log *zap.Logger
 }
 
+func (*EchoHandler) Pattern() string {
+	return "/echo"
+}
+
 func NewEchoHandler(log *zap.Logger) *EchoHandler {
 	return &EchoHandler{log}
 }
@@ -20,7 +24,7 @@ func (h *EchoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewServeMux(echo *EchoHandler) *http.ServeMux {
+func NewServeMux(echo Route) *http.ServeMux {
 	mux := http.NewServeMux()
 	mux.Handle("/echo", echo)
 	return mux
