@@ -12,6 +12,12 @@ type Route interface {
 	Pattern() string
 }
 
+type Params struct {
+	fx.In
+
+	Logger *zap.Logger `optional:"true"`
+}
+
 func main() {
 	fx.New(
 		fx.Provide(
@@ -22,7 +28,6 @@ func main() {
 			),
 			AsRoute(NewEchoHandler),
 			AsRoute(NewHelloHandler),
-			zap.NewExample,
 		),
 		fx.Invoke(func(*http.Server) {}),
 	).Run()

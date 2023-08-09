@@ -15,7 +15,14 @@ func (*EchoHandler) Pattern() string {
 	return "/echo"
 }
 
-func NewEchoHandler(log *zap.Logger) *EchoHandler {
+func NewEchoHandler(params Params) *EchoHandler {
+
+	log := params.Logger
+	fmt.Print("test1\n")
+	if log == nil {
+		fmt.Print("test2\n")
+		log = zap.NewNop()
+	}
 	return &EchoHandler{log}
 }
 
@@ -37,7 +44,15 @@ type HelloHandler struct {
 	log *zap.Logger
 }
 
-func NewHelloHandler(log *zap.Logger) *HelloHandler {
+func NewHelloHandler(params Params) *HelloHandler {
+
+	log := params.Logger
+	fmt.Print("test1\n")
+	if log == nil {
+		fmt.Print("test2\n")
+		log = zap.NewNop()
+	}
+
 	return &HelloHandler{log: log}
 }
 func (*HelloHandler) Pattern() string {
