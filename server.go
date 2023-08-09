@@ -2,13 +2,13 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"go.uber.org/fx"
+	"go.uber.org/zap"
 	"net"
 	"net/http"
 )
 
-func NewHTTPServer(lc fx.Lifecycle, mux *http.ServeMux) *http.Server {
+func NewHTTPServer(lc fx.Lifecycle, mux *http.ServeMux, log *zap.Logger) *http.Server {
 	srv := &http.Server{Addr: ":8080", Handler: mux}
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -16,7 +16,7 @@ func NewHTTPServer(lc fx.Lifecycle, mux *http.ServeMux) *http.Server {
 			if err != nil {
 				return err
 			}
-			fmt.Println("Starting HTTP server at", srv.Addr)
+			log.Info("Starting HTTP server", zap.String("addr", srv.Addr))
 			go func() {
 				err := srv.Serve(ln)
 				if err != nil {
