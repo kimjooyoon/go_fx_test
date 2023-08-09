@@ -10,21 +10,34 @@ import (
 func main() {
 	fx.New(
 		fx.Provide(NewHttpServer),
-		fx.Invoke(func(*http.Server) {}),
+		fx.Invoke(func(server2 Server) {}),
 	).Run()
 }
 
-func NewHttpServer(lc fx.Lifecycle) *http.Server {
-	srv := &http.Server{Addr: ":8080"}
+type Server interface {
+	getAddr() string
+	runServe(l net.Listener) error
+	Shutdown(ctx context.Context) error
+}
+
+type api struct {
+	*http.Server
+}
+
+func (r api) getAddr() string               { return r.Addr }
+func (r api) runServe(l net.Listener) error { return r.Serve(l) }
+
+func NewHttpServer(lc fx.Lifecycle) Server {
+	var srv Server = api{&http.Server{Addr: ":8080"}}
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			ln, err := net.Listen("tcp", srv.Addr)
+			ln, err := net.Listen("tcp", srv.getAddr())
 			if err != nil {
 				return err
 			}
 			go func() {
-				err := srv.Serve(ln)
+				err := srv.runServe(ln)
 				if err != nil {
 					return
 				}
