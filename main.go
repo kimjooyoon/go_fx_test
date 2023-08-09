@@ -18,20 +18,20 @@ func main() {
 			NewHTTPServer,
 			fx.Annotate(
 				NewServeMux,
-				fx.ParamTags(`name:"echo"`, `name:"hello"`),
+				fx.ParamTags(`group:"routes"`),
 			),
-			fx.Annotate(
-				NewEchoHandler,
-				fx.As(new(Route)),
-				fx.ResultTags(`name:"echo"`),
-			),
-			fx.Annotate(
-				NewHelloHandler,
-				fx.As(new(Route)),
-				fx.ResultTags(`name:"hello"`),
-			),
+			AsRoute(NewEchoHandler),
+			AsRoute(NewHelloHandler),
 			zap.NewExample,
 		),
 		fx.Invoke(func(*http.Server) {}),
 	).Run()
+}
+
+func AsRoute(f any) any {
+	return fx.Annotate(
+		f,
+		fx.As(new(Route)),
+		fx.ResultTags(`group:"routes"`),
+	)
 }

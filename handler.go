@@ -25,10 +25,11 @@ func (h *EchoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func NewServeMux(route1, route2 Route) *http.ServeMux {
+func NewServeMux(routes []Route) *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.Handle(route1.Pattern(), route1)
-	mux.Handle(route2.Pattern(), route2)
+	for _, route := range routes {
+		mux.Handle(route.Pattern(), route)
+	}
 	return mux
 }
 
